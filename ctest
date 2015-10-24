@@ -1,0 +1,8 @@
+#/bin/sh
+export sess='curl -X POST -u "6229e6da-c9da-4f01-8d81-3d0c541d622d":"3W5AajrPIEXp" "https://stream.watsonplatform.net/speech-to-text/api/v1/sessions" '
+
+echo $sess
+curl -u "6229e6da-c9da-4f01-8d81-3d0c541d622d":"3W5AajrPIEXp" \
+-H "content-type: audio/wav" \
+--data-binary @"./speech1.wav" \
+"https://stream.watsonplatform.net/speech-to-text/api/v1/sessions/$sess/recognize"
