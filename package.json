@@ -6,17 +6,18 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "express": "4.12.x",
-    "ejs": "*",
-    "cloudant": "*",
     "body-parser": "1.13.2",
+    "cloudant": "*",
+    "connect-multiparty": "1.2.5",
+    "ejs": "*",
+    "errorhandler": "1.4.1",
+    "express": "4.12.x",
     "method-override": "2.3.3",
     "morgan": "1.6.1",
-    "errorhandler": "1.4.1",
-    "connect-multiparty": "1.2.5"
+    "watson-developer-cloud": "^0.10.6"
   },
   "repository": {},
   "engines": {
-  	"node": "0.12.x"  	
+    "node": "0.12.x"
   }
 }
