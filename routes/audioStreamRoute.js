@@ -20,18 +20,17 @@ router.post('/', function (req, res){
 	s.push(null);
 
 	var wavFile;
-	transcodeRawStream(s, 16000, wavFile, true){
-		speech_to_text.createSession({}, function(err, session) {
-			if (err)
-				console.log('error:', err);
-			else{
-				console.log(JSON.stringify(session, null, 2));
-				if(isWatsonSpeechAvailable(session)){
-					recognizeSpeech(wavFile, session);
-				}
+	transcodeRawStream(s, 16000, wavFile, true)
+	speech_to_text.createSession({}, function(err, session) {
+		if (err)
+			console.log('error:', err);
+		else{
+			console.log(JSON.stringify(session, null, 2));
+			if(isWatsonSpeechAvailable(session)){
+				recognizeSpeech(wavFile, session);
 			}
-		});
-	}
+		}
+	});
 
 
 	// var encoder = new lame.Encoder({
@@ -52,9 +51,9 @@ router.post('/', function (req, res){
 
 var recognizeSpeech = function(wavStream, session) {
 	var params = {
-		session: session
+		session: session,
 		audio: wavStream,
-		content/type: 'audio/wav'
+		content_type: 'audio/wav'
 	}
 
 	speech_to_text.recognize(params, function(err, script){
@@ -125,3 +124,5 @@ var transcodeRawStream = function(rawInputStream, outputSampleRate, outputPipe, 
 	addStandardListeners(command);
 	command.run();
 };
+
+module.exports = router;
