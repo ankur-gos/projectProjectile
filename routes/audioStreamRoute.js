@@ -19,47 +19,50 @@ router.get('/', function (req, res){
 })
 
 
+
 router.post('/', function (req, res){
-	//var s = new stream.readable();
-
-	// This needs to be set in order to work
-	// s_read = function foo() {}
-
-	// s.push(req.body.audio);
-	// s.push(null);
-
-	var wavFile;
-	// comment in if data is uncompressed
-	// transcodeRawStream(s, 16000, wavFile, true)
-	try{
-		wavFile = fs.createReadStream('./speech2.wav');
-	} catch (err){
-		console.log(err);
-	}
-	speech_to_text.createSession({}, function(err, session) {
-		if (err)
-			console.log('error:', err);
-		else{
-			var session_id = session.session_id;
-			var session_cookie = session.cookie_session;
-			console.log(JSON.stringify(session, null, 2));
-			isWatsonSpeechAvailable(session.session_id, function (bool) {
-				if(bool){
-					recognizeSpeech(wavFile, session.session_id, function (speech){
-						clearInterval(updateTimer);
-						speech = speech + '\n';
-						fs.appendFile('./speech.txt', speech, function (err){
-							if(err){
-								console.log(err);
-							}
-						})
-					});
-				}
-			})
-			res.end();
-
+	if(req.body === undefined){
+		console.log("NO FILE");
+		res.end();
+	} else{
+		console.log(req.body)
+		var audioFile = req.body
+		fs.writeFile('sample.wav', req.body, function(err) {
+    		res.sendStatus(err ? 500 : 200);
+  		})
+		var wavFile;
+		// comment in if data is uncompressed
+		// transcodeRawStream(s, 16000, wavFile, true)
+		try{
+			wavFile = fs.createReadStream('./sample.wav');
+		} catch (err){
+			console.log(err);
 		}
-	});
+		console.log(wavFile);
+		speech_to_text.createSession({}, function(err, session) {
+			if (err)
+				console.log('error:', err);
+			else{
+				var session_id = session.session_id;
+				var session_cookie = session.cookie_session;
+				console.log(JSON.stringify(session, null, 2));
+				isWatsonSpeechAvailable(session.session_id, function (bool) {
+					if(bool){
+						flushFile();
+						recognizeSpeech(wavFile, session.session_id, function (speech){
+							speech = speech + '\n';
+							fs.appendFile('./speech.txt', speech, function (err){
+								if(err){
+									console.log(err);
+								}
+							})
+						});
+					}
+				});
+			}
+		})
+	}
+});
 
 
 	// var encoder = new lame.Encoder({
@@ -76,7 +79,23 @@ router.post('/', function (req, res){
 	// var mp3;
 	// s.pipe(encoder).pipe(mp3);
 	// console.log(mp3);
-})
+// })
+
+var flushFile = function(){
+	var i;
+	var count = 0;
+	fs.createReadStream('./speech.txt')
+		.on('data', function (chunk){
+			for(i=0; i < chunk.length; i++)
+				if (chunk[i] == 10) count++;
+		})
+		.on('end', function(){
+			console.log(count)
+			if(count > 3){
+				fs.writeFile('./speech.txt', '', 'utf8');
+			}
+		})
+}
 
 var recognizeSpeech = function(wavStream, session_id, callback) {
 
