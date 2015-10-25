@@ -91,7 +91,7 @@ var flushFile = function(){
 		})
 		.on('end', function(){
 			console.log(count)
-			if(count > 3){
+			if(count > 10){
 				fs.writeFile('./speech.txt', '', 'utf8');
 			}
 		})
