@@ -31,23 +31,33 @@ router.post('/', function (req, res){
 	var wavFile;
 	// comment in if data is uncompressed
 	// transcodeRawStream(s, 16000, wavFile, true)
-
-	wavFile = fs.createReadStream('../speech1.wav');
+	try{
+		wavFile = fs.createReadStream('./speech2.wav');
+	} catch (err){
+		console.log(err);
+	}
 	speech_to_text.createSession({}, function(err, session) {
 		if (err)
 			console.log('error:', err);
 		else{
+			var session_id = session.session_id;
+			var session_cookie = session.cookie_session;
 			console.log(JSON.stringify(session, null, 2));
-			if(isWatsonSpeechAvailable(session.session_id)){
-				var speech = recognizeSpeech(wavFile, session.session_id);
-				speech = speech + '\n';
-				fs.appendFile('./speech.txt', speech, function (err){
-					if(err){
-						res.send(new Error('failed to write to file'))
-					}
-				})
-				res.send('OK');
-			}
+			isWatsonSpeechAvailable(session.session_id, function (bool) {
+				if(bool){
+					recognizeSpeech(wavFile, session.session_id, function (speech){
+						clearInterval(updateTimer);
+						speech = speech + '\n';
+						fs.appendFile('./speech.txt', speech, function (err){
+							if(err){
+								console.log(err);
+							}
+						})
+					});
+				}
+			})
+			res.end();
+
 		}
 	});
 
@@ -68,20 +78,21 @@ router.post('/', function (req, res){
 	// console.log(mp3);
 })
 
-var recognizeSpeech = function(wavStream, session_id) {
+var recognizeSpeech = function(wavStream, session_id, callback) {
+
 	var params = {
 		session: session_id,
 		audio: wavStream,
 		content_type: 'audio/wav'
-	}
+	};
 
 	speech_to_text.recognize(params, function(err, script){
 		if(err) {
 			console.log(err);
-			return;
+			callback(null);
 		} else {
-			console.log(JSON.stringify(transcript, null, 2));
-			return parseTranscription(transcript);
+			console.log(JSON.stringify(script, null, 2));
+			callback(parseTranscription(script));
 		}
 	})
 }
@@ -98,19 +109,19 @@ var parseTranscription = function (script){
 	return endResult;
 }
 
-var isWatsonSpeechAvailable = function(session_id) {
+var isWatsonSpeechAvailable = function(session_id, callback) {
 	speech_to_text.getRecognizeStatus({ session_id: session_id},
 										function(err, status) {
 		if (err) {
 			console.log('error:', err);
-			return false;
+			callback(false);
 		}
 		else {
 			console.log('isAvailable');
 			console.log(JSON.stringify(status, null, 2));
-			if( status.state === 'initialized')
-				return true;
-			return false;
+			if( status.session.state === 'initialized')
+				callback(true);
+			callback(false);
 		}
 
 	});

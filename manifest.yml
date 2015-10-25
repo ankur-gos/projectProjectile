@@ -2,11 +2,10 @@ applications:
 - path: .
   memory: 512M
   instances: 1
-  domain: mybluemix.net
+  domain: eu-gb.mybluemix.net
   name: projectile
   host: projectile
   disk_quota: 1024M
-  services:
-  - projectile-cloudantNoSQLDB
-  - projectile-MonitoringAndAnalytics
+- services:
+  -  cloudant
   command: node app.js
